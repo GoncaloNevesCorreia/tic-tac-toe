@@ -1,5 +1,10 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
 .wrapper {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -19,8 +24,30 @@
 }
 
 .square {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 100px;
     width: 100px;
     border: 1px solid black;
+}
+
+.square > span {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.square > span.play1 {
+    color: rgb(82, 167, 196);
+}
+
+.square > span.play2 {
+    color: rgb(180, 102, 102);
+}
+
+button.restartGame {
+    padding: 1rem;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    width: 200px;
 }
