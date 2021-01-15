@@ -1,96 +1,84 @@
+import { CreateGame } from "./board.js"
+
 class Bot {
 
     constructor(symbol) {
         this.symbol = symbol;
     }
 
-    makePlay(Game) {
-
-
-
-        let bestScore = -Infinity;
-        let bestMove;
+    minimax(Game, depth, isMaximizing) {
+        const board = Game.board;
+        console.log("In minimax: ", Game);
 
         let scores = {
-            X: (Game.player1Symbol === 'X') ? -10 : 10,
-            O: (Game.player2Symbol === 'O' ? 10 : -10),
+            X: -10,
+            O: 10,
             tie: 0
         };
 
-        for (let x = 0; x < Game.board.length; x++) {
-            for (let y = 0; y < Game.board.length; y++) {
-                if (Game.isSpaceUntaken(x, y)) {
-                    let score = minimax(Game.board, 0, true);
+        let result = Game.checkGameState(); // TODO! checkGameState inside minimax function.
+        if (result !== false) {
+            return scores[result];
+        }
+      
+        if (isMaximizing) {
+          let bestScore = -Infinity; // Get the MAX
+          for (let x = 0; x < 3; x++) {
+            for (let y = 0; y < 3; y++) {
+              // Is the spot available?
+              if (board[x][y] == Game.untakenSpace) {
+                board[x][y] = Game.player2Symbol;
+                let score = this.minimax(Game, depth + 1, false);
+                board[x][y] = Game.untakenSpace;
+                bestScore = Math.max(score, bestScore); // Maximizing player
+              }
+            }
+          }
+          return bestScore;
+        } else {
+          let bestScore = Infinity; // Get the MIN
+          for (let x = 0; x < 3; x++) {
+            for (let y = 0; y < 3; y++) {
+              // Is the spot available?
+              if (board[x][y] == Game.untakenSpace) {
+                board[x][y] = Game.player1Symbol;
+                let score = this.minimax(board, depth + 1, true);
+                board[x][y] = Game.untakenSpace;
+                bestScore = Math.min(score, bestScore); // Minimazing player
+              }
+            }
+          }
+          return bestScore;
+        }
+      }
+
+    makePlay(Game) {
+        console.log("In makePlay: ", Game);
+        // AI to make its turn
+        let bestScore = -Infinity;
+        let move;
+        
+        for (let x = 0; x < 3; x++) {
+            for (let y = 0; y < 3; y++) {
+                // Is the spot available?
+                if (Game.board[x][y] == Game.untakenSpace) {
+                    Game.board[x][y] = Game.player2Symbol;
+                    let score = this.minimax(Game, 0, false);
+                    Game.board[x][y] = Game.untakenSpace;
                     if (score > bestScore) {
                         bestScore = score;
-                        bestMove = { x, y };
+                        move = { x, y };
                     }
                 }
             }
         }
 
-
-
-        function minimax(board, depth, isMaximizing) {
-            const player1State = Game.checkGameState(Game.player1Symbol);
-            const computerState = Game.checkGameState(Game.player2Symbol);
-
-            if (computerState === 'tie' || player1State === 'tie') return scores.tie;
-
-            if (player1State !== false) {
-                return scores[Game.player1Symbol];
-
-            } else if (computerState !== false) {
-
-                return scores[Game.player2Symbol];
-            }
-
-            if (isMaximizing) {
-                let bestScore = -Infinity;
-                for (let x = 0; x < Game.board.length; x++) {
-                    for (let y = 0; y < Game.board.length; y++) {
-                        if (Game.isSpaceUntaken(x, y)) {
-                            board[x][y] = Game.player2Symbol;
-
-                            let score = minimax(board, depth + 1, false);
-                            board[x][y] = Game.untakenSpace;
-                            if (score > bestScore) {
-                                bestScore = score;
-                            }
-                        }
-                    }
-                }
-                return bestScore;
-            } else {
-                let bestScore = Infinity;
-                for (let x = 0; x < Game.board.length; x++) {
-                    for (let y = 0; y < Game.board.length; y++) {
-                        if (Game.isSpaceUntaken(x, y)) {
-                            board[x][y] = Game.player1Symbol;
-
-                            let score = minimax(board, depth + 1, true);
-                            board[x][y] = Game.untakenSpace;
-                            if (score < bestScore) {
-                                bestScore = score;
-                            }
-                        }
-                    }
-                }
-                return bestScore;
-            }
-        }
-
-
-
-
-
-
-        Game.storePlay(bestMove.x, bestMove.y, this.symbol);
+        Game.storePlay(move.x, move.y, this.symbol);
         Game.renderPlays();
+        // Next turn
+        Game.nextTurn();
         Game.numberOfCurrentPlay++;
     }
-
-
 }
 
 export { Bot };

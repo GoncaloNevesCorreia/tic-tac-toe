@@ -44,22 +44,33 @@ function playerVsPlayer(event) {
 }
 
 function playerVsBot(event) {
+    console.log(Game.isOver);
     if (Game.isOver) return;
 
     player1.makePlay(event, Game);
     let gameState = Game.checkGameState();
 
-    if (gameState !== null) alert(gameState);
+    if (gameState !== false) {
+        Game.isOver = true;
+        alert(gameState)
+    };
+
+    if (Game.isOver) return;
 
     // Next turn
     Game.nextTurn();
 
     bot.makePlay(Game);
-    gameState = Game.checkGameState();
-    if (gameState !== null) alert(gameState);
+    //bestMove();
 
-    // Next turn
-    Game.nextTurn();
+    gameState = Game.checkGameState();
+
+    if (gameState !== false) {
+        Game.isOver = true;
+        alert(gameState)
+    };
+    
+    
 }
 
 
@@ -72,10 +83,15 @@ function gameRestart() {
 function init() {
 
     if (playAgainstComputer) {
-        Game.player1Turn = Math.round(Math.random());
+        //Game.player1Turn = Math.round(Math.random());
+        Game.player1Turn = false;
 
         if (!Game.player1Turn) {
             bot.makePlay(Game);
+            //bestMove();
+
+            // Next turn
+            Game.nextTurn();
         }
 
     }
@@ -92,4 +108,76 @@ function init() {
     btnRestartGame.addEventListener("click", gameRestart);
 }
 
+// function bestMove() {
+//     // AI to make its turn
+//     let bestScore = -Infinity; // Get the MAX
+//     let move;
+//     for (let i = 0; i < 3; i++) {
+//       for (let j = 0; j < 3; j++) {
+//         // Is the spot available?
+//         if (Game.board[i][j] == Game.untakenSpace) {
+//           Game.board[i][j] = Game.player2Symbol;
+//           let score = minimax(Game.board, 0, false);
+//           Game.board[i][j] = Game.untakenSpace;
+//           if (score > bestScore) {
+//             bestScore = score; // Maximizing player
+//             move = { i, j };
+//           }
+//         }
+//       }
+//     }
+    
+//     Game.storePlay(move.i, move.j, Game.player2Symbol);
+    
+//     Game.renderPlays();
+//     // Next turn
+//     Game.nextTurn();
+//     Game.numberOfCurrentPlay++;
+//   }
+  
+//   let scores = {
+//     X: -10,
+//     O: 10,
+//     tie: 0
+//   };
+  
+//   function minimax(board, depth, isMaximizing) {
+//     let result = Game.checkGameState();
+//     if (result !== false) {
+//         return scores[result];
+//     }
+  
+//     if (isMaximizing) {
+//       let bestScore = -Infinity; // Get the MAX
+//       for (let i = 0; i < 3; i++) {
+//         for (let j = 0; j < 3; j++) {
+//           // Is the spot available?
+//           if (board[i][j] == Game.untakenSpace) {
+//             board[i][j] = Game.player2Symbol;
+//             let score = minimax(board, depth + 1, false);
+//             board[i][j] = Game.untakenSpace;
+//             bestScore = Math.max(score, bestScore); // Maximizing player
+//           }
+//         }
+//       }
+//       return bestScore;
+//     } else {
+//       let bestScore = Infinity; // Get the MIN
+//       for (let i = 0; i < 3; i++) {
+//         for (let j = 0; j < 3; j++) {
+//           // Is the spot available?
+//           if (board[i][j] == Game.untakenSpace) {
+//             board[i][j] = Game.player1Symbol;
+//             let score = minimax(board, depth + 1, true);
+//             board[i][j] = Game.untakenSpace;
+//             bestScore = Math.min(score, bestScore); // Minimazing player
+//           }
+//         }
+//       }
+//       return bestScore;
+//     }
+//   }
+
 init();
+
+

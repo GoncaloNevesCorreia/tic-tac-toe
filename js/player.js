@@ -15,7 +15,6 @@ class Player {
             Game.renderPlays();
 
             Game.numberOfCurrentPlay++;
-
         }
     }
 }

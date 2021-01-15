@@ -8,7 +8,7 @@ class CreateGame {
         ];
         this.numberOfCurrentPlay = 0;
         this.isOver = false;
-        this.player1Turn = true;
+        this.player1Turn = false;
         this.untakenSpace = untakenSpace;
         this.player1Symbol = player1Symbol;
         this.player2Symbol = player2Symbol;
@@ -54,47 +54,6 @@ class CreateGame {
         }
     }
 
-    gameHasWinner() {
-        const thereIsAWinner = true;
-        const playerSymbol = this.player1Turn ? this.player1Symbol : this.player2Symbol;
-
-        if (this.numberOfCurrentPlay >= 5) {
-            for (let i = 0; i < this.board.length; i++) { // Check for winner in ROWS
-                if (this.board[i][0] === playerSymbol &&
-                    this.board[i][1] === playerSymbol &&
-                    this.board[i][2] === playerSymbol) {
-                    // Winner found in ROW
-                    return thereIsAWinner;
-                }
-            }
-
-            for (let i = 0; i < this.board.length; i++) { // Check for winner in COLUMN
-                if (this.board[0][i] === playerSymbol &&
-                    this.board[1][i] === playerSymbol &&
-                    this.board[2][i] === playerSymbol) {
-                    // Winner found in COLUMN
-                    return thereIsAWinner;
-                }
-            }
-
-            if (this.board[0][0] === playerSymbol &&
-                this.board[1][1] === playerSymbol &&
-                this.board[2][2] === playerSymbol) { // Check winner in diagonal left to right
-                // Winner found in diagonal
-                return thereIsAWinner;
-            }
-
-            if (this.board[0][2] === playerSymbol &&
-                this.board[1][1] === playerSymbol &&
-                this.board[2][0] === playerSymbol) { // Check winner in diagonal right to left
-                // Winner found in diagonal
-                return thereIsAWinner;
-            }
-
-        }
-        return !thereIsAWinner;
-    }
-
     restartBoard() {
 
         // Clear board Array
@@ -108,66 +67,52 @@ class CreateGame {
 
     }
 
-    // checkGameState() {
-    //     const TIE = 9;
+    checkGameState() {
+        
+        const hasOpenSpaces = () => {
+            for (let i = 0; i < this.board.length; i++) {
+                for (let j = 0; j < this.board.length; j++) {
+                    if (this.board[i][j] == this.untakenSpace) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        const equals3 = (a, b, c) => {
+            return a == b && b == c && a != this.untakenSpace;
+        }
 
-    //     if (this.numberOfCurrentPlay === TIE) { // Check for TIE
-    //         this.isOver = true;
-    //         //alert(`Game ended in a TIE.`);
-    //         return 'TIE';
-
-    //     } else if (this.gameHasWinner()) { // Check for Winner
-    //         this.isOver = true;
-    //         //const winner = this.player1Turn ? `Player1: ${this.player1Symbol}` : this.playAgainstComputer ? `Computer: ${this.player2Symbol}` : `Player2: ${this.player2Symbol}`;
-    //         //alert(`${winner} wins.`);
-
-
-    //         return this.player1Turn ? this.player1Symbol : this.player2Symbol;
-    //     }
-    // }
-
-    checkGameState(player) {
-        const TIE = 9;
-        const IsWinner = true;
-
-        if (this.numberOfCurrentPlay === TIE) { // Check for TIE
-            this.isOver = true;
+        if (!hasOpenSpaces()) { // Check for TIE
             return 'tie';
         }
 
         for (let i = 0; i < this.board.length; i++) { // Check for winner in ROWS
-            if (this.board[i][0] === player &&
-                this.board[i][1] === player &&
-                this.board[i][2] === player) {
+            if (equals3(this.board[i][0], this.board[i][1], this.board[i][2])) {
                 // Winner found in ROW
-                return IsWinner;
+                return this.board[i][0];
             }
         }
 
         for (let i = 0; i < this.board.length; i++) { // Check for winner in COLUMN
-            if (this.board[0][i] === player &&
-                this.board[1][i] === player &&
-                this.board[2][i] === player) {
+            if (equals3(this.board[0][i], this.board[1][i], this.board[2][i])) {
                 // Winner found in COLUMN
-                return IsWinner;
+                return this.board[0][i];
             }
         }
 
-        if (this.board[0][0] === player &&
-            this.board[1][1] === player &&
-            this.board[2][2] === player) { // Check winner in diagonal left to right
+        if (equals3(this.board[0][0], this.board[1][1], this.board[2][2])) { // Check winner in diagonal left to right
             // Winner found in diagonal
-            return IsWinner;
+            return this.board[0][0];
         }
 
-        if (this.board[0][2] === player &&
-            this.board[1][1] === player &&
-            this.board[2][0] === player) { // Check winner in diagonal right to left
+        if (equals3(this.board[0][2], this.board[1][1], this.board[2][0])) { // Check winner in diagonal right to left
             // Winner found in diagonal
-            return IsWinner;
+            return this.board[0][2];
         }
 
-        return !IsWinner;
+        return false;
     }
 
     nextTurn() {
