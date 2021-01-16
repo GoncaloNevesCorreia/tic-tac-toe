@@ -6,9 +6,8 @@ class CreateGame {
             [untakenSpace, untakenSpace, untakenSpace],
             [untakenSpace, untakenSpace, untakenSpace]
         ];
-        this.numberOfCurrentPlay = 0;
         this.isOver = false;
-        this.player1Turn = false;
+        this.player1Turn = true;
         this.untakenSpace = untakenSpace;
         this.player1Symbol = player1Symbol;
         this.player2Symbol = player2Symbol;
@@ -26,6 +25,15 @@ class CreateGame {
 
     isSpaceUntaken(x, y) {
         return (this.board[x][y] === this.untakenSpace)
+    }
+
+    getCords(event) {
+        const space = event.target;
+        const id = space.id;
+        if (this.isValidID(id) && this.isSpaceUntaken(id[0], id[1])) {
+            return { x: id[0], y: id[1] };
+        }
+        return;
     }
 
     storePlay(x, y, player) {
@@ -63,12 +71,14 @@ class CreateGame {
 
         // Restart Game Variables
         this.isOver = false;
-        this.numberOfCurrentPlay = 0;
 
+        // Generate Random Turn
+        this.player1Turn = Math.round(Math.random());
+        this.displayTurn();
     }
 
     checkGameState() {
-        
+
         const hasOpenSpaces = () => {
             for (let i = 0; i < this.board.length; i++) {
                 for (let j = 0; j < this.board.length; j++) {
@@ -79,14 +89,12 @@ class CreateGame {
             }
             return false;
         }
-        
+
         const equals3 = (a, b, c) => {
             return a == b && b == c && a != this.untakenSpace;
         }
 
-        if (!hasOpenSpaces()) { // Check for TIE
-            return 'tie';
-        }
+
 
         for (let i = 0; i < this.board.length; i++) { // Check for winner in ROWS
             if (equals3(this.board[i][0], this.board[i][1], this.board[i][2])) {
@@ -112,11 +120,35 @@ class CreateGame {
             return this.board[0][2];
         }
 
+        if (!hasOpenSpaces()) { // Check for DRAW
+            return 'draw';
+        }
+
         return false;
     }
 
     nextTurn() {
         this.player1Turn = !this.player1Turn;
+        this.displayTurn();
+    }
+
+    displayTurn() {
+        const div_current_turn = document.querySelector("div#gameInfo");
+        const playerWithTurn = this.player1Turn ? this.player1Symbol : this.player2Symbol;
+        const classTurn = this.player1Turn ? "player1Turn" : "player2Turn";
+        div_current_turn.innerHTML = `<span class="${classTurn}">It's ${playerWithTurn} turn!</span>`;
+    }
+
+    hasWinner() {
+        const gameState = this.checkGameState();
+
+        if (gameState !== false) {
+            this.isOver = true;
+            const div_current_turn = document.querySelector("div#gameInfo");
+            const message = (gameState === "draw") ? "The game ended in a draw." : `<strong>${gameState}</strong> Wins!`;
+            const classWinner = (gameState === this.player1Symbol) ? "player1Winner" : (gameState === "draw") ? "gameDraw" : "player2Winner";
+            div_current_turn.innerHTML = `<span class="${classWinner}">${message}</span>`;
+        }
     }
 }
 

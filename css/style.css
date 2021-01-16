@@ -1,3 +1,9 @@
+:root {
+    --player1Color: rgb(82, 167, 196);
+    --player2Color: rgb(180, 102, 102);
+    --gameDrawColor: green;
+}
+
 body {
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -32,17 +38,17 @@ body {
     border: 1px solid black;
 }
 
-.square > span {
+.square>span {
     font-size: 3rem;
     font-weight: bold;
 }
 
-.square > span.play1 {
-    color: rgb(82, 167, 196);
+.square>span.play1 {
+    color: var(--player1Color);
 }
 
-.square > span.play2 {
-    color: rgb(180, 102, 102);
+.square>span.play2 {
+    color: var(--player2Color);
 }
 
 button.restartGame {
@@ -50,4 +56,33 @@ button.restartGame {
     font-size: 1.5rem;
     margin-top: 1rem;
     width: 200px;
+}
+
+#gameInfo {
+    margin-bottom: 2rem;
+}
+
+.player1Turn {
+    font-size: 2.5rem;
+    color: var(--player1Color);
+}
+
+.player2Turn {
+    font-size: 2.5rem;
+    color: var(--player2Color);
+}
+
+.player1Winner {
+    font-size: 2.5rem;
+    color: var(--player1Color);
+}
+
+.player2Winner {
+    font-size: 2.5rem;
+    color: var(--player2Color);
+}
+
+.gameDraw {
+    font-size: 2.5rem;
+    color: var(--gameDrawColor);
 }
