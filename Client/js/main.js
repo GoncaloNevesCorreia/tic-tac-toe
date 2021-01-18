@@ -11,9 +11,14 @@ import { Board } from "./board.js"
 // const player2 = new Player(player2Symbol);
 // const bot = new Bot(player2Symbol);
 
+const socket = io();
+
+const div_yourSymbol = document.querySelector("div#yourSymbol");
+const div_info = document.querySelector("div#gameInfo");
 const btnRestartGame = document.querySelector("button.restartGame");
 const spaces = document.querySelectorAll(".square");
 
+const GameBoard = new Board();
 let Game = {};
 
 
@@ -23,14 +28,14 @@ let Game = {};
 function playerVsPlayer(event) {
     if (Game.isOver) return;
 
-    const cords = Game.getCords(event);
+    const cords = GameBoard.getCords(event, Game);
     if (cords === undefined) return; // Invalid play
 
-    if (Game.player1Turn) {
-        player1.makePlay(cords, Game)
-    } else {
-        player2.makePlay(cords, Game);
-    }
+
+    socket.emit("make.move", {
+        x: cords.x,
+        y: cords.y
+    });
 }
 
 function playerVsBot(event) {
@@ -48,47 +53,57 @@ function playerVsBot(event) {
 
 
 function gameRestart() {
-    Game.restartBoard();
-    Game.renderPlays();
+    
+    socket.emit("restart-game");
 
-    if (Game.playAgainstComputer && !Game.player1Turn) bot.makePlay(Game);
+    // Game.restartBoard();
+    // Game.renderPlays();
+
+    // if (Game.playAgainstComputer && !Game.player1Turn) bot.makePlay(Game);
 }
 
 
 function init() {
 
-    const socket = io();
+    
 
     socket.on('connect', () => {
         const playerID = socket.id;
         console.log(`> Player connected with id: ${playerID}`);
 
-
+        div_info.textContent = "Waiting for oponent...";
 
     });
 
-    socket.on('game.begin', (state) => {
+    socket.on('game.begin', (gameState) => {
         console.log(`> Receiving 'game.begin' event from server.`);
-        console.log(state);
-        Game = state;
+        Game = gameState.state;
+        console.log(Game);
         clickHandlers(Game.playAgainstComputer);
+
+        GameBoard.displayTurn(Game);
+        div_yourSymbol.innerHTML = `You are <strong>${Game.playerSymbol}</strong>`;
     });
 
-    /*Game.restartBoard();
+    socket.on('move.made', (gameState) => {
+        Game = gameState.state;
+        console.log(Game);
 
-    if (playAgainstComputer && !Game.player1Turn) {
-        bot.makePlay(Game);
-    }
+        GameBoard.displayTurn(Game);
+        GameBoard.renderPlays(Game);
 
-    spaces.forEach(space => {
-        if (playAgainstComputer) {
-            space.addEventListener("click", playerVsBot);
-        } else {
-            space.addEventListener("click", playerVsPlayer);
-        }
+        GameBoard.hasWinner(Game);
     });
 
-    btnRestartGame.addEventListener("click", gameRestart);*/
+    socket.on('restart.game', (gameState) => {
+        Game = gameState.state;
+        console.log(Game);
+
+        GameBoard.displayTurn(Game);
+        GameBoard.renderPlays(Game);
+        div_yourSymbol.innerHTML = `You are <strong>${Game.playerSymbol}</strong>`;
+        
+    });
 }
 
 

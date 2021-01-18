@@ -43,11 +43,11 @@ body {
     font-weight: bold;
 }
 
-.square>span.play1 {
+.square>span.playX {
     color: var(--player1Color);
 }
 
-.square>span.play2 {
+.square>span.playO {
     color: var(--player2Color);
 }
 
@@ -62,22 +62,22 @@ button.restartGame {
     margin-bottom: 2rem;
 }
 
-.player1Turn {
+.playerX {
     font-size: 2.5rem;
     color: var(--player1Color);
 }
 
-.player2Turn {
+.playerO {
     font-size: 2.5rem;
     color: var(--player2Color);
 }
 
-.player1Winner {
+.playerXWinner {
     font-size: 2.5rem;
     color: var(--player1Color);
 }
 
-.player2Winner {
+.playerOWinner {
     font-size: 2.5rem;
     color: var(--player2Color);
 }

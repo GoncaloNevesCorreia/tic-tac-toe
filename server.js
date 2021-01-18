@@ -22,51 +22,104 @@ app.use(express.static('Client'));
 
 const addPlayer = socket => {
     clientSockets[socket.id] = socket;
-
     const game = new CreateGame(socket.id, unmatched, untakenSpace, playAgainstComputer);
     players[socket.id] = game;
-    console.log(`> Players :${players}`);
+
+    console.log(`> Client Connected: ${socket.id}`);
 };
 
 const removePlayer = socket => {
-    console.log("Client disconnected", socket.id);
     delete players[socket.id];
     delete clientSockets[socket.id];
     if (socket.id === unmatched) unmatched = null;
+
+    console.log(`> Client Disconnected: ${socket.id}`);
 };
 
 
 sockets.on('connection', (socket) => {
-    const playerID = socket.id;
-
-    console.log(`> Player connected on server with id: ${playerID}`);
-
-
+    
     joinGame(socket);
-
+    
+    const player = players[socket.id];
     // Once the socket has an opponent, we can begin the game
     if (getOpponent(socket)) {
         socket.emit("game.begin", {
-            state: players[playerID]
+            state: player
         });
 
         getOpponent(socket).emit("game.begin", {
             state: players[getOpponent(socket).id]
         });
+
+        console.log(players);
     }
 
     // Listens for a move to be made and emits an event to both
     // players after the move is completed
-    socket.on("make.move", function(data) {
+    socket.on("make.move", function (cords) {
         if (!getOpponent(socket)) return;
+        if (!player.playerTurn || player.isOver) return;
+        if (player.isValidCords(cords.x, cords.y)) {
+            // Stores the play
+            player.storePlay(cords.x, cords.y, true); 
+            players[getOpponent(socket).id].storePlay(cords.x, cords.y, false);
+            
+            // Check's for winner
+            player.hasWinner();
+            players[getOpponent(socket).id].hasWinner();
 
+            // Emits changes
+            socket.emit("move.made", {
+                state: player
+            });
 
-        socket.emit("move.made", data);
-        getOpponent(socket).emit("move.made", data);
+            getOpponent(socket).emit("move.made", {
+                state: players[getOpponent(socket).id]
+            });
+        }
     });
 
+    socket.on("restart-game", function () { 
+        player.restartBoard();
+        if (getOpponent(socket)) {
+            players[getOpponent(socket).id].restartBoard();
+
+            const playerIsX = Math.round(Math.random());
+
+            if (playerIsX) {
+                player.playerSymbol = 'X';
+                player.opponentSymbol = 'O';
+                players[getOpponent(socket).id].playerSymbol = 'O';
+                players[getOpponent(socket).id].opponentSymbol = 'X';
+                player.playerTurn = true;
+                players[getOpponent(socket).id].playerTurn = false;
+            } else {
+                player.playerSymbol = 'O';
+                player.opponentSymbol = 'X';
+                players[getOpponent(socket).id].playerSymbol = 'X';
+                players[getOpponent(socket).id].opponentSymbol = 'O';
+                player.playerTurn = false;
+                players[getOpponent(socket).id].playerTurn = true;
+            }
+
+            getOpponent(socket).emit("restart.game", {
+                state: players[getOpponent(socket).id]
+            });
+
+        } else {
+            unmatched = player.player;
+        }
+
+        socket.emit("restart.game", {
+            state: player
+        });
+
+        
+    });
+    
     // Emit an event to the opponent when the player leaves
-    socket.on("disconnect", function() {
+    socket.on("disconnect", function () {
         if (getOpponent(socket)) {
             getOpponent(socket).emit("opponent.left");
         }
@@ -78,11 +131,7 @@ sockets.on('connection', (socket) => {
         data.id = id;
         socket.broadcast.emit("moving", data);
     });
-
-
-    console.log(players);
 });
-
 
 
 
@@ -90,6 +139,7 @@ function joinGame(socket) {
     addPlayer(socket);
 
     if (unmatched) {
+        players[socket.id].playerTurn = false;
         players[socket.id].playerSymbol = 'O';
         players[socket.id].opponentSymbol = 'X';
         players[unmatched].opponent = socket.id;

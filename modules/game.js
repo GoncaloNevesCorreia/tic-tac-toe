@@ -10,7 +10,7 @@ export default class CreateGame {
         ];
         this.isOver = false;
         this.winner = null;
-        this.player1Turn = true;
+        this.playerTurn = true;
         this.untakenSpace = untakenSpace;
         this.playerSymbol = 'X';
         this.opponentSymbol = 'O';
@@ -18,11 +18,10 @@ export default class CreateGame {
     }
 
     // Checks the id from Client-Side
-    isValidID(id) {
-        if (id !== "" && !isNaN(id) && id.length == 2) {
-            if (id[0] >= 0 && id[0] <= 2 && id[1] >= 0 && id[1] <= 2) {
-                return true;
-            }
+    isValidCords(x, y) {
+        if (!isNaN(x) && !isNaN(y) && (x >= 0 && x <= this.board.length -1) && (y >= 0 && y <= this.board.length -1)) {
+            if (this.isSpaceUntaken(x, y))
+            return true;
         }
         return false;
     }
@@ -34,7 +33,13 @@ export default class CreateGame {
 
     // Stores play in board 
     storePlay(x, y, player) {
-        this.board[x][y] = player;
+        if (player) {
+            this.board[x][y] = this.playerSymbol;
+        } else {
+            this.board[x][y] = this.opponentSymbol;
+        }
+
+        this.nextTurn();
     }
 
 
@@ -51,7 +56,7 @@ export default class CreateGame {
         this.isOver = false;
 
         // Generate Random Turn
-        this.player1Turn = Math.round(Math.random());
+        this.playerTurn = (this.playerSymbol === 'X');
 
     }
 
@@ -106,7 +111,7 @@ export default class CreateGame {
     }
 
     nextTurn() {
-        this.player1Turn = !this.player1Turn;
+        this.playerTurn = !this.playerTurn;
 
     }
 
