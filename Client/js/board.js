@@ -43,6 +43,11 @@ class Board {
         }
     }
 
+    displaySymbol(symbol) {
+        const div_Your_Symbol = document.querySelector("div#yourSymbol");
+        div_Your_Symbol.innerHTML = `<span class="player${symbol}">You are ${symbol}</span>`;
+    }
+
     displayTurn(GameState) {
         const div_current_turn = document.querySelector("div#gameInfo");
         const playerWithTurn = GameState.playerTurn ? 'your' : GameState.opponentSymbol;
@@ -59,6 +64,20 @@ class Board {
         }
     }
 
+
+    waitingForOponent() {
+        const div_game_info = document.querySelector("div#gameInfo");
+        const div_Your_Symbol = document.querySelector("div#yourSymbol");
+        div_game_info.textContent = "Waiting for oponent...";
+        div_Your_Symbol.textContent = "";
+    }
+
+    opponentDisconnected() {
+        const div_game_info = document.querySelector("div#gameInfo");
+        const div_Your_Symbol = document.querySelector("div#yourSymbol");
+        div_game_info.textContent = "The opponent has disconnected.";
+        div_Your_Symbol.textContent = "";
+    }
 
 
 }

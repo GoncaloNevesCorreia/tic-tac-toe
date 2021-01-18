@@ -71,7 +71,7 @@ function init() {
         const playerID = socket.id;
         console.log(`> Player connected with id: ${playerID}`);
 
-        div_info.textContent = "Waiting for oponent...";
+        GameBoard.waitingForOponent();
 
     });
 
@@ -82,7 +82,7 @@ function init() {
         clickHandlers(Game.playAgainstComputer);
 
         GameBoard.displayTurn(Game);
-        div_yourSymbol.innerHTML = `You are <strong>${Game.playerSymbol}</strong>`;
+        GameBoard.displaySymbol(Game.playerSymbol);
     });
 
     socket.on('move.made', (gameState) => {
@@ -99,10 +99,18 @@ function init() {
         Game = gameState.state;
         console.log(Game);
 
-        GameBoard.displayTurn(Game);
-        GameBoard.renderPlays(Game);
-        div_yourSymbol.innerHTML = `You are <strong>${Game.playerSymbol}</strong>`;
-        
+        if (Game.opponent) {
+            GameBoard.displayTurn(Game);
+            GameBoard.renderPlays(Game);
+            
+            GameBoard.displaySymbol(Game.playerSymbol);
+        } else {
+            GameBoard.waitingForOponent();
+        }
+    });
+
+    socket.on('opponent.left', () => {
+        GameBoard.opponentDisconnected();
     });
 }
 

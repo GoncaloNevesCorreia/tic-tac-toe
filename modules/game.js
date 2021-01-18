@@ -54,6 +54,7 @@ export default class CreateGame {
 
         // Restart Game Variables
         this.isOver = false;
+        this.winner = null;
 
         // Generate Random Turn
         this.playerTurn = (this.playerSymbol === 'X');
@@ -123,5 +124,17 @@ export default class CreateGame {
             this.isOver = true;
             this.winner = gameState;
         }
+    }
+
+    playsFirst() {
+        this.playerSymbol = 'X';
+        this.opponentSymbol = 'O';
+        this.playerTurn = true;
+    }
+
+    playsSecond() {
+        this.playerSymbol = 'O';
+        this.opponentSymbol = 'X';
+        this.playerTurn = false;
     }
 }

@@ -88,19 +88,11 @@ sockets.on('connection', (socket) => {
             const playerIsX = Math.round(Math.random());
 
             if (playerIsX) {
-                player.playerSymbol = 'X';
-                player.opponentSymbol = 'O';
-                players[getOpponent(socket).id].playerSymbol = 'O';
-                players[getOpponent(socket).id].opponentSymbol = 'X';
-                player.playerTurn = true;
-                players[getOpponent(socket).id].playerTurn = false;
+                player.playsFirst();
+                players[getOpponent(socket).id].playsSecond();
             } else {
-                player.playerSymbol = 'O';
-                player.opponentSymbol = 'X';
-                players[getOpponent(socket).id].playerSymbol = 'X';
-                players[getOpponent(socket).id].opponentSymbol = 'O';
-                player.playerTurn = false;
-                players[getOpponent(socket).id].playerTurn = true;
+                player.playsSecond();
+                players[getOpponent(socket).id].playsFirst();
             }
 
             getOpponent(socket).emit("restart.game", {
@@ -108,19 +100,47 @@ sockets.on('connection', (socket) => {
             });
 
         } else {
-            unmatched = player.player;
+
+            if (unmatched) {
+                player.playerTurn = false;
+                player.playerSymbol = 'O';
+                player.opponentSymbol = 'X';
+                player.opponent = unmatched;
+                unmatched = null;
+            } else {
+                player.player
+                unmatched = player.player;
+            }
+
+            
+
+            if (getOpponent(socket)) {
+                console.log(player.player, player.opponent);
+
+                socket.emit("game.begin", {
+                    state: player
+                });
+                
+                getOpponent(socket).emit("game.begin", {
+                    state: players[getOpponent(socket).id]
+                });
+            }
         }
 
         socket.emit("restart.game", {
             state: player
         });
-
-        
     });
     
     // Emit an event to the opponent when the player leaves
     socket.on("disconnect", function () {
+        
         if (getOpponent(socket)) {
+            const opponent = getOpponent(socket).id;
+            players[opponent].opponent = null;
+            players[opponent].isOver = true;
+            players[opponent].winner = players[opponent].playerSymbol;
+
             getOpponent(socket).emit("opponent.left");
         }
         removePlayer(socket);
@@ -151,7 +171,7 @@ function joinGame(socket) {
 
 // Returns the opponent socket
 function getOpponent(socket) {
-    if (players[socket.id].opponent) {
+    if (players[socket.id] && players[socket.id].opponent) {
         const opponentID = players[socket.id].opponent;
         return clientSockets[opponentID];
     }

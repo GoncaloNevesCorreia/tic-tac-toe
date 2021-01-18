@@ -86,3 +86,18 @@ button.restartGame {
     font-size: 2.5rem;
     color: var(--gameDrawColor);
 }
+
+#yourSymbol {
+    font-size: 2rem;
+    color: black;
+}
+
+#yourSymbol > span.playerX {
+    font-weight: bold;
+    color: var(--player1Color);
+}
+
+#yourSymbol > span.playerO {
+    font-weight: bold;
+    color:var(--player2Color);
+}
