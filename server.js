@@ -38,9 +38,9 @@ const removePlayer = socket => {
 
 
 sockets.on('connection', (socket) => {
-    
+
     joinGame(socket);
-    
+
     const player = players[socket.id];
     // Once the socket has an opponent, we can begin the game
     if (getOpponent(socket)) {
@@ -51,20 +51,20 @@ sockets.on('connection', (socket) => {
         getOpponent(socket).emit("game.begin", {
             state: players[getOpponent(socket).id]
         });
-
-        console.log(players);
     }
 
     // Listens for a move to be made and emits an event to both
     // players after the move is completed
-    socket.on("make.move", function (cords) {
+    socket.on("make.move", function(cords) {
         if (!getOpponent(socket)) return;
         if (!player.playerTurn || player.isOver) return;
         if (player.isValidCords(cords.x, cords.y)) {
+
+
             // Stores the play
-            player.storePlay(cords.x, cords.y, true); 
+            player.storePlay(cords.x, cords.y, true);
             players[getOpponent(socket).id].storePlay(cords.x, cords.y, false);
-            
+
             // Check's for winner
             player.hasWinner();
             players[getOpponent(socket).id].hasWinner();
@@ -80,7 +80,7 @@ sockets.on('connection', (socket) => {
         }
     });
 
-    socket.on("restart-game", function () { 
+    socket.on("restart.game", function() {
         player.restartBoard();
         if (getOpponent(socket)) {
             players[getOpponent(socket).id].restartBoard();
@@ -106,21 +106,19 @@ sockets.on('connection', (socket) => {
                 player.playerSymbol = 'O';
                 player.opponentSymbol = 'X';
                 player.opponent = unmatched;
+                players[unmatched].opponent = player.player;
                 unmatched = null;
             } else {
                 player.player
                 unmatched = player.player;
             }
 
-            
-
             if (getOpponent(socket)) {
-                console.log(player.player, player.opponent);
 
                 socket.emit("game.begin", {
                     state: player
                 });
-                
+
                 getOpponent(socket).emit("game.begin", {
                     state: players[getOpponent(socket).id]
                 });
@@ -131,10 +129,14 @@ sockets.on('connection', (socket) => {
             state: player
         });
     });
-    
+
+
+
+
+
     // Emit an event to the opponent when the player leaves
-    socket.on("disconnect", function () {
-        
+    socket.on("disconnect", function() {
+
         if (getOpponent(socket)) {
             const opponent = getOpponent(socket).id;
             players[opponent].opponent = null;
@@ -177,15 +179,6 @@ function getOpponent(socket) {
     }
     return;
 }
-
-
-
-
-
-
-
-
-
 
 
 server.listen(port, () => {

@@ -3,7 +3,7 @@ class Board {
     isSpaceUntaken(x, y, GameState) {
         return (GameState.board[x][y] === GameState.untakenSpace)
     }
-    
+
     isValidID(id) {
         if (id !== "" && !isNaN(id) && id.length == 2) {
             if (id[0] >= 0 && id[0] <= 2 && id[1] >= 0 && id[1] <= 2) {
@@ -68,15 +68,18 @@ class Board {
     waitingForOponent() {
         const div_game_info = document.querySelector("div#gameInfo");
         const div_Your_Symbol = document.querySelector("div#yourSymbol");
-        div_game_info.textContent = "Waiting for oponent...";
-        div_Your_Symbol.textContent = "";
+        div_game_info.innerHTML = "<span class='searching'>Finding a new opponent...</span>";
+        div_Your_Symbol.innerHTML = "";
     }
 
     opponentDisconnected() {
         const div_game_info = document.querySelector("div#gameInfo");
         const div_Your_Symbol = document.querySelector("div#yourSymbol");
-        div_game_info.textContent = "The opponent has disconnected.";
-        div_Your_Symbol.textContent = "";
+        const btnRestartGame = document.querySelector(".restartGame");
+
+        div_game_info.innerHTML = "<span class='disconnected'>The opponent has disconnected. :(</span>";
+        div_Your_Symbol.innerHTML = "";
+        btnRestartGame.textContent = "Find New Opponent";
     }
 
 

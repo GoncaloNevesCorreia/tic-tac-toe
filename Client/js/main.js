@@ -13,10 +13,11 @@ import { Board } from "./board.js"
 
 const socket = io();
 
-const div_yourSymbol = document.querySelector("div#yourSymbol");
-const div_info = document.querySelector("div#gameInfo");
-const btnRestartGame = document.querySelector("button.restartGame");
+const btnRestartGame = document.querySelector(".restartGame");
 const spaces = document.querySelectorAll(".square");
+const btnMultiplayer = document.querySelector("#btnMultiplayer");
+const btnComputer = document.querySelector("#btnComputer");
+
 
 const GameBoard = new Board();
 let Game = {};
@@ -30,7 +31,6 @@ function playerVsPlayer(event) {
 
     const cords = GameBoard.getCords(event, Game);
     if (cords === undefined) return; // Invalid play
-
 
     socket.emit("make.move", {
         x: cords.x,
@@ -52,20 +52,10 @@ function playerVsBot(event) {
 }
 
 
-function gameRestart() {
-    
-    socket.emit("restart-game");
 
-    // Game.restartBoard();
-    // Game.renderPlays();
-
-    // if (Game.playAgainstComputer && !Game.player1Turn) bot.makePlay(Game);
-}
 
 
 function init() {
-
-    
 
     socket.on('connect', () => {
         const playerID = socket.id;
@@ -76,9 +66,8 @@ function init() {
     });
 
     socket.on('game.begin', (gameState) => {
-        console.log(`> Receiving 'game.begin' event from server.`);
         Game = gameState.state;
-        console.log(Game);
+
         clickHandlers(Game.playAgainstComputer);
 
         GameBoard.displayTurn(Game);
@@ -87,7 +76,6 @@ function init() {
 
     socket.on('move.made', (gameState) => {
         Game = gameState.state;
-        console.log(Game);
 
         GameBoard.displayTurn(Game);
         GameBoard.renderPlays(Game);
@@ -97,12 +85,12 @@ function init() {
 
     socket.on('restart.game', (gameState) => {
         Game = gameState.state;
-        console.log(Game);
+
+        GameBoard.renderPlays(Game);
+        btnRestartGame.textContent = "Restart";
 
         if (Game.opponent) {
             GameBoard.displayTurn(Game);
-            GameBoard.renderPlays(Game);
-            
             GameBoard.displaySymbol(Game.playerSymbol);
         } else {
             GameBoard.waitingForOponent();
@@ -116,6 +104,8 @@ function init() {
 
 
 function clickHandlers(playAgainstComputer) {
+
+
     spaces.forEach(space => {
         if (playAgainstComputer) {
             space.addEventListener("click", playerVsBot);
@@ -124,7 +114,18 @@ function clickHandlers(playAgainstComputer) {
         }
     });
 
-    btnRestartGame.addEventListener("click", gameRestart);
+
+    btnMultiplayer.addEventListener("click", () => {
+        socket.emit("multiplayer.game");
+    });
+
+    btnComputer.addEventListener("click", () => {
+        socket.emit("computer.game");
+    });
+
+    btnRestartGame.addEventListener("click", () => {
+        socket.emit("restart.game");
+    });
 }
 
 

@@ -84,7 +84,6 @@ class Bot {
             // Next turn
             Game.nextTurn();
         }, 1000);
-
     }
 }
 
