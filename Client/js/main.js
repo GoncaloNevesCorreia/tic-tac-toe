@@ -2,15 +2,6 @@ import { Bot } from "./bot.js";
 import { Player } from "./player.js";
 import { Board } from "./board.js"
 
-// const untakenSpace = 0;
-// const player1Symbol = "X";
-// const player2Symbol = "O";
-// let playAgainstComputer = false;
-// const Game = new CreateGame(player1Symbol, player2Symbol, untakenSpace, playAgainstComputer);
-// const player1 = new Player(player1Symbol);
-// const player2 = new Player(player2Symbol);
-// const bot = new Bot(player2Symbol);
-
 const socket = io();
 
 const btnRestartGame = document.querySelector(".restartGame");
@@ -22,8 +13,8 @@ const btnComputer = document.querySelector("#btnComputer");
 const GameBoard = new Board();
 let Game = {};
 
-
-
+let userInfo = null;
+let opponentInfo = null;
 
 
 function playerVsPlayer(event) {
@@ -52,12 +43,19 @@ function playerVsBot(event) {
 }
 
 
-
-
-
 function init() {
+    changeNameAction();
+    getTopScores();
 
     socket.on('connect', () => {
+        if (!getCookie("connection_id")) {
+            setCookie("connection_id", socket.id);
+        }
+
+        socket.on('activeUserSession', () => {
+            activeSessionWarning();
+        });
+
         const playerID = socket.id;
         console.log(`> Player connected with id: ${playerID}`);
 
@@ -65,8 +63,37 @@ function init() {
 
     });
 
+    socket.on("authenticate", () => {
+        const cookie = getCookie("connection_id");
+        socket.emit("authentication", cookie);
+    });
+
+    socket.on("userInfo", (playerInfo) => {
+        userInfo = playerInfo;
+
+        updateInfo();
+    });
+
+    socket.on("changed.name", (name) => {
+        userInfo.name = name;
+        updateInfo();
+    });
+
+    socket.on("opponent.changed.name", (name) => {
+        opponentInfo.name = name;
+
+        updateInfo();
+    });
+
+
     socket.on('game.begin', (gameState) => {
+        console.log(gameState.opponentInfo);
+
+        userInfo = gameState.playerInfo;
+        opponentInfo = gameState.opponentInfo;
         Game = gameState.state;
+
+        updateInfo();
 
         clickHandlers(Game.playAgainstComputer);
 
@@ -76,20 +103,35 @@ function init() {
 
     socket.on('move.made', (gameState) => {
         Game = gameState.state;
+        userInfo = gameState.playerInfo;
+        opponentInfo = gameState.opponentInfo;
+
+        console.log("Game State", gameState);
+        console.log("User Info:", userInfo);
+        console.log("Opponent Info", opponentInfo);
+
+        updateInfo();
+
 
         GameBoard.displayTurn(Game);
         GameBoard.renderPlays(Game);
 
         GameBoard.hasWinner(Game);
+
     });
 
     socket.on('restart.game', (gameState) => {
         Game = gameState.state;
+        userInfo = gameState.playerInfo;
+
+        updateInfo();
+
 
         GameBoard.renderPlays(Game);
         btnRestartGame.textContent = "Restart";
 
-        if (Game.opponent) {
+        if (gameState.opponentInfo) {
+            opponentInfo = gameState.opponentInfo;
             GameBoard.displayTurn(Game);
             GameBoard.displaySymbol(Game.playerSymbol);
         } else {
@@ -98,7 +140,20 @@ function init() {
     });
 
     socket.on('opponent.left', () => {
+        opponentInfo = null;
         GameBoard.opponentDisconnected();
+        updateInfo();
+    });
+}
+
+function changeNameAction() {
+    const btnChangeName = document.querySelector("#btnChangeName");
+
+    btnChangeName.addEventListener("click", () => {
+        const nameInput = document.querySelector("#idName");
+        if (nameInput.value !== "") {
+            socket.emit("change.name", nameInput.value);
+        }
     });
 }
 
@@ -115,6 +170,8 @@ function clickHandlers(playAgainstComputer) {
     });
 
 
+
+
     btnMultiplayer.addEventListener("click", () => {
         socket.emit("multiplayer.game");
     });
@@ -128,5 +185,66 @@ function clickHandlers(playAgainstComputer) {
     });
 }
 
+function updateInfo() {
+    const playerDiv = document.querySelector(".player");
+    const opponentDiv = document.querySelector(".opponent");
+    if (userInfo) playerDiv.innerHTML = `<span id="yourUsername">${userInfo.name}</span> (YOU): <span class="score">${userInfo.score} games won!</span>`;
+    if (opponentInfo) {
+        opponentDiv.innerHTML = `<span id="opponentUsername">${opponentInfo.name} </span>: <span class="score">${opponentInfo.score} games won!</span>`;
+    } else {
+        opponentDiv.innerHTML = "";
+    }
+}
+
+function activeSessionWarning() {
+    const gameInfo = document.querySelector("#gameInfo");
+    gameInfo.innerHTML = "<span class='error'>There is already an active game session!</span>";
+}
+
+function setCookie(name, value) {
+    var expires = "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+    document.cookie = `${name}=${value};${expires}; path=/`;
+}
+
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+function showTopScores(users) {
+    const div_TopScores = document.querySelector("#top_scores .users");
+    let allUsers = "";
+    users.forEach((user, index) => {
+        allUsers += `
+        <div class="user">
+            ${index + 1}º.
+            <span class="name">${user.name}</span>
+            <span class="score">${user.score} games Won</span>
+        </div>
+        `;
+    });
+
+    div_TopScores.innerHTML = allUsers;
+}
+
+async function getTopScores() {
+    const protocole = window.location.protocol;
+    const host = window.location.hostname;
+    const port = window.location.port;
+
+    const response = await fetch(`${protocole}//${host}:${port}/topscores`);
+    const responseJSON = await response.json();
+
+    showTopScores(responseJSON);
+
+
+    setInterval(getTopScores, 60000);
+}
 
 init();

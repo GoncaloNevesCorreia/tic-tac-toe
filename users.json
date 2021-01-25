@@ -1,0 +1,45 @@
+[
+  {
+    "session_id": "vc_cOMN_sJmxhQmMAAAD",
+    "name": "Pitohui",
+    "current_session_id": "HsM8BY4c9wQIgsQtAAAB",
+    "online": false,
+    "gamesWon": 4,
+    "temp_session_id": "b8bAQVJmY_al8AMrAAAN"
+  },
+  {
+    "session_id": "FJNl9BYyDB-akIN8AAAD",
+    "name": "Alberto",
+    "temp_session_id": "4kyXr6Oyy_YrimLuAAAH",
+    "online": false,
+    "gamesWon": 2
+  },
+  {
+    "session_id": "57XzmxYs7VPPe8UjAAAB",
+    "name": "player7303",
+    "current_session_id": "57XzmxYs7VPPe8UjAAAB",
+    "online": false,
+    "gamesWon": 0
+  },
+  {
+    "session_id": "okREh8EIZJ8p8BISAAAP",
+    "name": "player3021",
+    "temp_session_id": "jurTB3GRFjq8XLF1AAAF",
+    "online": false,
+    "gamesWon": 0
+  },
+  {
+    "session_id": "rzHTzMdBBusYPKYIAAAJ",
+    "name": "MyPlayer",
+    "temp_session_id": "Vc44TLyH1LGuLQXLAAAZ",
+    "online": true,
+    "gamesWon": 1
+  },
+  {
+    "session_id": "uj-KNDvIWs6GRzhlAAAX",
+    "name": "MyOpponent",
+    "temp_session_id": "qd4Mn-yn-OEV4KKvAAAb",
+    "online": true,
+    "gamesWon": 0
+  }
+]

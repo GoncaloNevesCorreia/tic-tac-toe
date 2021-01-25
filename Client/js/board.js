@@ -49,10 +49,19 @@ class Board {
     }
 
     displayTurn(GameState) {
+        const htmlBoard = document.querySelector(".board");
         const div_current_turn = document.querySelector("div#gameInfo");
         const playerWithTurn = GameState.playerTurn ? 'your' : GameState.opponentSymbol;
         const classTurn = GameState.playerTurn ? `player${GameState.playerSymbol}` : `player${GameState.opponentSymbol}`;
         div_current_turn.innerHTML = `<span class="${classTurn}">It's ${playerWithTurn} turn!</span>`;
+
+        const hasClassName = htmlBoard.classList.contains("notYourTurn");
+        if (GameState.playerTurn && hasClassName) {
+            htmlBoard.classList.remove("notYourTurn");
+        } else if (!GameState.playerTurn && !hasClassName) {
+            htmlBoard.classList.add("notYourTurn");
+        }
+
     }
 
     hasWinner(GameState) {

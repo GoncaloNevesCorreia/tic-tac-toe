@@ -1,4 +1,4 @@
-export default class CreateGame {
+class CreateGame {
 
     constructor(player1, player2ID, untakenSpace, playAgainstComputer) {
         this.player = player1;
@@ -19,9 +19,9 @@ export default class CreateGame {
 
     // Checks the id from Client-Side
     isValidCords(x, y) {
-        if (!isNaN(x) && !isNaN(y) && (x >= 0 && x <= this.board.length -1) && (y >= 0 && y <= this.board.length -1)) {
+        if (!isNaN(x) && !isNaN(y) && (x >= 0 && x <= this.board.length - 1) && (y >= 0 && y <= this.board.length - 1)) {
             if (this.isSpaceUntaken(x, y))
-            return true;
+                return true;
         }
         return false;
     }
@@ -138,3 +138,6 @@ export default class CreateGame {
         this.playerTurn = false;
     }
 }
+
+
+module.exports = { CreateGame };

@@ -116,6 +116,7 @@ a.restartGame {
 }
 
 #choose-menu {
+    display: flex;
     position: absolute;
     top: 10px;
     left: 10px;
@@ -139,6 +140,55 @@ a.button {
 
 a.button:hover {
     border-color: rgba(255, 255, 255, 1);
+}
+
+.players {
+    position: absolute;
+    top: 100px;
+    left: 10px;
+}
+
+.error {
+    font-size: 2.5rem;
+    color: red;
+}
+
+#top_scores {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+#top_scores h1 {
+    text-align: center;
+}
+
+#top_scores .user {
+    font-size: 1.5rem;
+}
+
+#top_scores .user .name {
+    color: #4e9af1;
+}
+
+.players {
+    font-size: 1.1rem;
+}
+
+#yourUsername {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #4e9af1;
+}
+
+#opponentUsername {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--player2Color);
+}
+
+.notYourTurn {
+    background: lightgray;
 }
 
 @media all and (max-width:30em) {
