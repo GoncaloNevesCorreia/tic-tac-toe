@@ -9,7 +9,6 @@ const spaces = document.querySelectorAll(".square");
 const btnMultiplayer = document.querySelector("#btnMultiplayer");
 const btnComputer = document.querySelector("#btnComputer");
 
-
 const GameBoard = new Board();
 let Game = {};
 
@@ -45,6 +44,8 @@ function playerVsBot(event) {
 
 function init() {
     changeNameAction();
+    sendMessageAction();
+
     getTopScores();
 
     socket.on('connect', () => {
@@ -79,12 +80,17 @@ function init() {
         updateInfo();
     });
 
+
     socket.on("opponent.changed.name", (name) => {
         opponentInfo.name = name;
 
         updateInfo();
     });
 
+    socket.on("messageSent", (messages) => {
+        loadMessages(messages);
+
+    });
 
     socket.on('game.begin', (gameState) => {
         console.log(gameState.opponentInfo);
@@ -157,6 +163,18 @@ function changeNameAction() {
     });
 }
 
+function sendMessageAction() {
+    const btnSendMessage = document.querySelector("#idBtnSendMessage");
+
+    btnSendMessage.addEventListener("click", (e) => {
+        e.preventDefault();
+        const messageInput = document.querySelector("#messageInput");
+        if (messageInput.value !== "") {
+            socket.emit("sendMessage", messageInput.value);
+            messageInput.value = "";
+        }
+    });
+}
 
 function clickHandlers(playAgainstComputer) {
 
@@ -194,6 +212,20 @@ function updateInfo() {
     } else {
         opponentDiv.innerHTML = "";
     }
+}
+
+function loadMessages(messages) {
+    const messages__div = document.querySelector("#messages");
+    let body = "";
+    messages.forEach(message => {
+        body +=
+            `<div class="message">
+            <span class="from ${message.yourMessage ? 'you' : ''}">${message.yourMessage ? 'YOU' : message.from}:</span>
+            <span class="messageText">${message.msg}</span>
+        </div>`;
+    });
+
+    messages__div.innerHTML = body;
 }
 
 function activeSessionWarning() {

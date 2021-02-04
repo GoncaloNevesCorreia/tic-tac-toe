@@ -197,3 +197,41 @@ a.button:hover {
         margin: 0.2em auto;
     }
 }
+
+#chat {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    max-width: 300px;
+}
+
+#chat form {
+    display: flex;
+}
+
+#chat textarea {
+    padding: 10px 20px;
+    resize: none;
+    height: 80px;
+}
+
+#messages {
+    max-height: 500px;
+    overflow: auto;
+}
+
+#messages .message {
+    padding: 10px;
+}
+
+#messages .message .from {
+    font-weight: bold;
+}
+
+#messages .message .from.you {
+    color: var(--player1Color);
+}
+
+#messages .message .messageText {
+    word-wrap: break-word;
+}

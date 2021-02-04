@@ -3,7 +3,8 @@ const http = require('http');
 const { CreateGame } = require('./modules/game.js');
 const { User } = require('./modules/user.js');
 const { Server } = require('socket.io');
-const fs = require('fs');
+const xssFilters = require('xss-filters');
+const { LOADIPHLPAPI } = require('dns');
 
 const app = express();
 const server = http.createServer(app);
@@ -104,11 +105,24 @@ sockets.on('connection', (socket) => {
 function joinGame(socket) {
     addPlayer(socket);
 
+    const user = users.getUserByCurrent_Session_ID(socket.id);
+    players[socket.id].storeMessage({ from: 'Admin', msg: `Welcome <b>${user.name}</b>`, yourMessage: false });
+    socket.emit("messageSent", players[socket.id].messages);
+
     if (unmatched && unmatched !== socket.id) {
         players[socket.id].playerTurn = false;
         players[socket.id].playerSymbol = 'O';
         players[socket.id].opponentSymbol = 'X';
         players[unmatched].opponent = socket.id;
+
+        const opponent = users.getUserByCurrent_Session_ID(unmatched);
+        players[socket.id].storeMessage({ from: 'Admin', msg: `Player <b>${opponent.name}</b> has joined.`, yourMessage: false });
+        socket.emit("messageSent", players[socket.id].messages);
+
+
+        players[unmatched].storeMessage({ from: 'Admin', msg: `Player <b>${user.name}</b> has joined.`, yourMessage: false });
+        getOpponent(socket).emit("messageSent", players[unmatched].messages);
+
         unmatched = null;
     } else {
         unmatched = socket.id;
@@ -147,6 +161,19 @@ function getCookie(socket) {
 }
 
 function gameStart(socket, cookie) {
+    socket.on("sendMessage", (message) => {
+        if (message !== "") {
+            const user = users.getUser(cookie);
+            player.storeMessage({ from: user.name, msg: message, yourMessage: true });
+            socket.emit("messageSent", player.messages);
+
+            if (getOpponent(socket)) {
+                const opponent = players[player.opponent];
+                opponent.storeMessage({ from: user.name, msg: message, yourMessage: false });
+                getOpponent(socket).emit("messageSent", opponent.messages);
+            }
+        }
+    });
 
 
     socket.on("change.name", (name) => {
@@ -169,6 +196,7 @@ function gameStart(socket, cookie) {
 
     let opponent = players[player.opponent];
     let userOponent = users.getUserByCurrent_Session_ID(player.opponent);
+
 
 
     // Once the socket has an opponent, we can begin the game
@@ -208,8 +236,7 @@ function gameStart(socket, cookie) {
     // Listens for a move to be made and emits an event to both
     // players after the move is completed
     socket.on("make.move", function(cords) {
-        if (!getOpponent(socket)) return;
-        if (!player.playerTurn || player.isOver) return;
+        if (!getOpponent(socket) || !player.playerTurn || player.isOver) return;
         if (player.isValidCords(cords.x, cords.y)) {
             opponent = players[player.opponent];
             userOponent = users.getUserByCurrent_Session_ID(player.opponent);
@@ -226,7 +253,7 @@ function gameStart(socket, cookie) {
             if (player.isOver) {
                 if (player.playerSymbol === player.winner) {
                     users.updateUserScore(user.session_id);
-                } else {
+                } else if (player.opponentSymbol === player.winner) {
                     users.updateUserScore(userOponent.session_id);
                 }
             }
@@ -295,6 +322,14 @@ function gameStart(socket, cookie) {
                 player.opponentSymbol = 'X';
                 player.opponent = unmatched;
                 players[unmatched].opponent = player.player;
+
+                let opponentUser = users.getUserByCurrent_Session_ID(player.opponent);
+
+                player.storeMessage({ from: 'Admin', msg: `Player <b>${opponentUser.name}</b> has joined.`, yourMessage: false });
+                socket.emit("messageSent", player.messages);
+
+                players[unmatched].storeMessage({ from: 'Admin', msg: `Player <b>${user.name}</b> has joined.`, yourMessage: false });
+                getOpponent(socket).emit("messageSent", players[unmatched].messages);
                 unmatched = null;
             } else {
                 unmatched = player.player;
@@ -369,12 +404,17 @@ function gameStart(socket, cookie) {
             players[opponent].winner = players[opponent].playerSymbol;
 
             getOpponent(socket).emit("opponent.left");
+
+            players[opponent].storeMessage({ from: 'Admin', msg: `Player <b>${user.name}</b> has left the game.`, yourMessage: false });
+            getOpponent(socket).emit("messageSent", players[opponent].messages);
         }
 
         console.log(`> User disconnected: ${user.name}`);
         removePlayer(socket);
     });
 }
+
+
 
 
 app.get('/topscores', function(req, res) {

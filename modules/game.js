@@ -15,6 +15,7 @@ class CreateGame {
         this.playerSymbol = 'X';
         this.opponentSymbol = 'O';
         this.playAgainstComputer = playAgainstComputer;
+        this.messages = [];
     }
 
     // Checks the id from Client-Side
@@ -136,6 +137,10 @@ class CreateGame {
         this.playerSymbol = 'O';
         this.opponentSymbol = 'X';
         this.playerTurn = false;
+    }
+
+    storeMessage(message) {
+        this.messages.push(message);
     }
 }
 
